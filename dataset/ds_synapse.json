@@ -22,7 +22,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "Table_tgt"
+			"table": "Table"
 		}
 	}
 }
