@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "mydwh14"
+		},
+		"ls_scd_tyep_2_connectionString": {
+			"value": ""
+		},
+		"mydwh14-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"linkedService1_accountKey": {
+			"value": ""
+		},
+		"mydwh14-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://mydl14.dfs.core.windows.net"
+		},
+		"linkedService1_properties_typeProperties_url": {
+			"value": "https://mydl14.dfs.core.windows.net"
+		}
+	}
+}
