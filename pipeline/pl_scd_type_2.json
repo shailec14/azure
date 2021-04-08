@@ -19,6 +19,12 @@
 						"referenceName": "df_scd_type_2",
 						"type": "DataFlowReference"
 					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "mydwh14-WorkspaceDefaultStorage",
+							"type": "LinkedServiceReference"
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
