@@ -21,9 +21,10 @@
 					},
 					"staging": {
 						"linkedService": {
-							"referenceName": "mydwh14-WorkspaceDefaultStorage",
+							"referenceName": "linkedService1",
 							"type": "LinkedServiceReference"
-						}
+						},
+						"folderPath": "myfile14"
 					},
 					"compute": {
 						"coreCount": 8,
