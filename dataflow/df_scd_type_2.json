@@ -26,6 +26,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "sinkInsert"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_table_scd_type_2",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
 				}
 			],
 			"transformations": [
@@ -43,9 +50,15 @@
 				},
 				{
 					"name": "SurrogateKey1"
+				},
+				{
+					"name": "AlterRow1"
+				},
+				{
+					"name": "SelectRemove"
 				}
 			],
-			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source\nsource(output(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> lkp\nsource, lkp lookup(source@col1 == lkp@col1,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupTGT\nLookupTGT select(mapColumn(\n\t\tcol1 = source@col1,\n\t\tload_dt,\n\t\tsg_key,\n\t\tcol_tgt = lkp@col1,\n\t\tload_start_dt,\n\t\tload_end_dt\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: false) ~> SelectRow\nSelectRow split(true(),\n\tisNull(col_tgt),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Output)\nConditionalSplit@Insert derive(load_end_dt = toDate('01/01/9000', 'mm/dd/yyyy')) ~> DerivedColumn\nDerivedColumn keyGenerate(output(sg_key as long),\n\tstartAt: 1L) ~> SurrogateKey1\nSurrogateKey1 sink(input(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sinkInsert"
+			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source\nsource(output(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> lkp\nsource, lkp lookup(source@col1 == lkp@col1,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupTGT\nLookupTGT select(mapColumn(\n\t\tcol1 = source@col1,\n\t\tload_dt,\n\t\tsg_key,\n\t\tcol_tgt = lkp@col1,\n\t\tload_start_dt,\n\t\tload_end_dt\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: false) ~> SelectRow\nSelectRow split(true(),\n\t! isNull(col_tgt)  && load_end_dt==toTimestamp('01/01/9000', 'mm/dd/yyyy'),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Output)\nConditionalSplit@Insert derive(load_end_dt = toDate('01/01/9000', 'mm/dd/yyyy')) ~> DerivedColumn\nDerivedColumn keyGenerate(output(sg_key as long),\n\tstartAt: 1L) ~> SurrogateKey1\nSelectRemove alterRow() ~> AlterRow1\nConditionalSplit@Output select(mapColumn(\n\t\tcol1,\n\t\tload_dt,\n\t\tsg_key\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectRemove\nSurrogateKey1 sink(input(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sinkInsert\nAlterRow1 sink(input(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['sg_key'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
 		}
 	}
 }
