@@ -1,0 +1,39 @@
+{
+	"name": "ds_table_scd_type_2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_scd_tyep_2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "sg_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "col1",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "load_start_dt",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "load_end_dt",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Table_tgt"
+		}
+	}
+}
