@@ -19,16 +19,33 @@
 					"name": "lkp"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_table_scd_type_2",
+						"type": "DatasetReference"
+					},
+					"name": "sinkInsert"
+				}
+			],
 			"transformations": [
 				{
 					"name": "LookupTGT"
 				},
 				{
 					"name": "SelectRow"
+				},
+				{
+					"name": "ConditionalSplit"
+				},
+				{
+					"name": "DerivedColumn"
+				},
+				{
+					"name": "SurrogateKey1"
 				}
 			],
-			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source\nsource(output(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> lkp\nsource, lkp lookup(source@col1 == lkp@col1,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupTGT\nLookupTGT select(mapColumn(\n\t\tcol1 = source@col1,\n\t\tload_dt,\n\t\tsg_key,\n\t\tcol_tgt = lkp@col1,\n\t\tload_start_dt,\n\t\tload_end_dt\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: false) ~> SelectRow"
+			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source\nsource(output(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> lkp\nsource, lkp lookup(source@col1 == lkp@col1,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupTGT\nLookupTGT select(mapColumn(\n\t\tcol1 = source@col1,\n\t\tload_dt,\n\t\tsg_key,\n\t\tcol_tgt = lkp@col1,\n\t\tload_start_dt,\n\t\tload_end_dt\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: false) ~> SelectRow\nSelectRow split(true(),\n\tisNull(col_tgt),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Output)\nConditionalSplit@Insert derive(load_end_dt = toDate('01/01/9000', 'mm/dd/yyyy')) ~> DerivedColumn\nDerivedColumn keyGenerate(output(sg_key as long),\n\tstartAt: 1L) ~> SurrogateKey1\nSurrogateKey1 sink(input(\n\t\tsg_key as integer,\n\t\tcol1 as integer,\n\t\tload_start_dt as timestamp,\n\t\tload_end_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sinkInsert"
 		}
 	}
 }
