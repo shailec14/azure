@@ -9,12 +9,23 @@
 						"referenceName": "ds_synapse",
 						"type": "DatasetReference"
 					},
+					"name": "source"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_synapse",
+						"type": "DatasetReference"
+					},
 					"name": "source1"
 				}
 			],
 			"sinks": [],
-			"transformations": [],
-			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source1"
+			"transformations": [
+				{
+					"name": "LookupTGT"
+				}
+			],
+			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source\nsource(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> source1\nsource lookup(ERROR_FUNCTION('') == ERROR_FUNCTION(''),\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupTGT"
 		}
 	}
 }
