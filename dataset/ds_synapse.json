@@ -2,7 +2,7 @@
 	"name": "ds_synapse",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_scd_tyep_2",
+			"referenceName": "AzureSynapseAnalytics1",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
@@ -22,7 +22,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "Table"
+			"table": "employee"
 		}
 	}
 }
