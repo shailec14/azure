@@ -1,0 +1,41 @@
+{
+	"name": "Dataflow1",
+	"properties": {
+		"folder": {
+			"name": "SinkCache"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_synapse",
+						"type": "DatasetReference"
+					},
+					"name": "empTable"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable2",
+						"type": "DatasetReference"
+					},
+					"name": "emp"
+				}
+			],
+			"sinks": [
+				{
+					"name": "CacheMaxSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "empid"
+				},
+				{
+					"name": "DerivedColumn"
+				}
+			],
+			"script": "source(output(\n\t\tcol1 as integer,\n\t\tload_dt as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'select max(id) maxid from dbo.employee',\n\tformat: 'query',\n\tstaged: false) ~> empTable\nsource(output(\n\t\temp_name as string,\n\t\tgender as string,\n\t\tcountry as string,\n\t\tsalary as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> emp\nemp keyGenerate(output(emp_id as long),\n\tstartAt: 1L) ~> empid\nempid derive(emp_id = CacheMaxSink#output()[1].maxid) ~> DerivedColumn\nempTable sink(mapColumn(\n\t\tid\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tstore: 'cache',\n\tformat: 'inline',\n\tsaveOrder: 1) ~> CacheMaxSink"
+		}
+	}
+}
