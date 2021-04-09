@@ -2,7 +2,7 @@
 	"name": "ds_synapse",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureSynapseAnalytics1",
+			"referenceName": "ls_sink_type",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
