@@ -1,0 +1,17 @@
+{
+	"name": "ds_synapse_pool",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_synapse_ppol",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tab"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}
